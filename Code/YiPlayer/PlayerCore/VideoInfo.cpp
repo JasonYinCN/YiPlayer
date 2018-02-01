@@ -1,23 +1,24 @@
+#include "stdafx.h"
+#include "VideoInfo.h"
 
-#include "PlayVideo.h"
- 
-PlayVideo::PlayVideo()
+
+VideoInfo::VideoInfo()
 {
 	av_register_all();
-	pformat_ctx = avformat_alloc_context();
 }
 
-PlayVideo::~PlayVideo()
+
+VideoInfo::~VideoInfo()
 {
 }
 
-bool PlayVideo::Open(string filePath)
+bool VideoInfo::Open(string filePath)
 {
 	m_filePath = filePath;
 	return avformat_open_input(&pformat_ctx, m_filePath.c_str(), NULL, NULL) == 0;
 }
 
-ULONGLONG PlayVideo::GetVideoLength()
+int64_t VideoInfo::GetVideoLength()
 {
 	if (pformat_ctx != NULL)
 		return pformat_ctx->duration;

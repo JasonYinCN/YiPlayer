@@ -18,24 +18,18 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stdafx.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="targetver.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="PlayVideo.h">
+    <ClInclude Include="VideoInfo.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="stdafx.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="PlayerCore.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="PlayVideo.cpp">
+    <ClCompile Include="VideoInfo.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

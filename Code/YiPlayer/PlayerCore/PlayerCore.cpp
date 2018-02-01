@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include <stdio.h>
 #include <string>
-#include "PlayVideo.h"
+#include "VideoInfo.h"
 #ifndef INT64_C
 #define INT64_C(c) (c ## LL)
 #define UINT64_C(c) (c ## ULL) 
@@ -12,9 +12,9 @@
 
 int main()
 {
-	PlayVideo* playVideoObj = new PlayVideo();
+	VideoInfo* playVideoObj = new VideoInfo();
 	playVideoObj->Open("C:\\Users\\Jason Yin\\Desktop\\MediaTest\\aaaaaaaa\\PopCap.mp4");
-	ULONGLONG videoLength = playVideoObj->GetVideoLength();
+	int64_t videoLength = playVideoObj->GetVideoLength();
 
     return 0;
 }
