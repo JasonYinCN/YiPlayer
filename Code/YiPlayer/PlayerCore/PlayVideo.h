@@ -11,7 +11,8 @@ public:
 	PlayVideo();
 	~PlayVideo();
 
-	ULONGLONG Open(string filePath);
+	bool Open(string filePath);
+	ULONGLONG GetVideoLength();
 public:
 	string m_filePath;
 private:
