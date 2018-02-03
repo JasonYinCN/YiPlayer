@@ -24,12 +24,21 @@
     <ClInclude Include="VideoInfo.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="OperationBase.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="VideoToPhotos.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PlayerCore.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="VideoInfo.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="VideoToPhotos.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

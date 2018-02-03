@@ -4,7 +4,9 @@
 #include "stdafx.h"
 #include <stdio.h>
 #include <string>
+#include<iostream>
 #include "VideoInfo.h"
+#include "VideoToPhotos.h"
 #ifndef INT64_C
 #define INT64_C(c) (c ## LL)
 #define UINT64_C(c) (c ## ULL) 
@@ -12,9 +14,15 @@
 
 int main()
 {
-	VideoInfo* playVideoObj = new VideoInfo();
-	playVideoObj->Open("C:\\Users\\Jason Yin\\Desktop\\MediaTest\\aaaaaaaa\\PopCap.mp4");
-	int64_t videoLength = playVideoObj->GetVideoLength();
+	VideoToPhotos* pVideoPlayer = new VideoToPhotos();
+	bool res = pVideoPlayer->Open("C:\\Users\\Jason Yin\\Desktop\\MediaTest\\aaaaaaaa\\PopCap.mp4");
+	if (!res)
+	{
+		printf("Open file failed!");
+		return 1;
+	}
+	pVideoPlayer->Start(ImageType::ImageType_JPEG, "H:\\temp\\");
+	getchar();
 
     return 0;
 }

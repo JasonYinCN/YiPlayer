@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace YiPlayer
+namespace VideoToImagesConverter
 {
     /// <summary>
     /// MainWindow.xaml 的交互逻辑
@@ -23,6 +23,11 @@ namespace YiPlayer
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            DragMove();
         }
     }
 }
