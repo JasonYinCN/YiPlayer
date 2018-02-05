@@ -2,7 +2,6 @@
 
 #include <string>
 
-using namespace std;
 extern "C"
 {
 #include "include\libavcodec\avcodec.h"  
@@ -19,18 +18,20 @@ extern "C"
 
   /*Include ffmpeg header file*/
 
-class VideoInfo
+#include "windows.h"
+using namespace std;
+using namespace System;
+
+
+public ref class VideoInfo
 {
 public:
 	VideoInfo();
 	~VideoInfo();
 
-	bool Open(string filePath);
-	int64_t GetVideoLength();
+	bool Open(String^ filePath);
 public:
-	string m_filePath;
-
-private:
-	AVFormatContext *pformat_ctx = NULL;
+	String^ FilePath = nullptr;
+	int64_t Duration = 0;
 };
 

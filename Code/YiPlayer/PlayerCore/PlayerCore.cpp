@@ -14,15 +14,15 @@
 
 int main()
 {
-	VideoToPhotos* pVideoPlayer = new VideoToPhotos();
-	bool res = pVideoPlayer->Open("C:\\Users\\Jason Yin\\Desktop\\MediaTest\\aaaaaaaa\\PopCap.mp4");
-	if (!res)
-	{
-		printf("Open file failed!");
-		return 1;
-	}
-	pVideoPlayer->Start(ImageType::ImageType_JPEG, "H:\\temp\\");
-	getchar();
+// 	VideoToPhotos* pVideoPlayer = gcnew VideoToPhotos();
+// 	bool res = pVideoPlayer->Open("C:\\Users\\Jason Yin\\Desktop\\MediaTest\\aaaaaaaa\\PopCap.mp4");
+// 	if (!res)
+// 	{
+// 		printf("Open file failed!");
+// 		return 1;
+// 	}
+// 	pVideoPlayer->Start(ImageType::ImageType_JPEG, "H:\\temp\\");
+// 	getchar();
 
     return 0;
 }

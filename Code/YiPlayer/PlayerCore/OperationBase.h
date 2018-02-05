@@ -1,5 +1,5 @@
 #pragma once
-class OperationBase
+public ref class OperationBase
 {
 public:
 	OperationBase() {};

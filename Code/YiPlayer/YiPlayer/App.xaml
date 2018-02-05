@@ -4,6 +4,11 @@
              xmlns:local="clr-namespace:VideoToImagesConverter"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/VideoToImagesConverter;component/Assets/Themes/Buttons.xaml"/>
+                <ResourceDictionary Source="/VideoToImagesConverter;component/Assets/Themes/WindowsStyle.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

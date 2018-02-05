@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "VideoInfo.h"
+#include <msclr\marshal_cppstd.h> 
+using namespace msclr::interop;
 
 
 VideoInfo::VideoInfo()
@@ -12,15 +14,17 @@ VideoInfo::~VideoInfo()
 {
 }
 
-bool VideoInfo::Open(string filePath)
+bool VideoInfo::Open(String^ filePath)
 {
-	m_filePath = filePath;
-	return avformat_open_input(&pformat_ctx, m_filePath.c_str(), NULL, NULL) == 0;
-}
-
-int64_t VideoInfo::GetVideoLength()
-{
-	if (pformat_ctx != NULL)
-		return pformat_ctx->duration;
-	return 0;
+	FilePath = filePath; 
+	AVFormatContext *pformat_ctx = NULL;
+	marshal_context context;
+	string strSavePath = context.marshal_as<std::string>(filePath);
+	bool res = avformat_open_input(&pformat_ctx, context.marshal_as<std::string>(filePath).c_str(), NULL, NULL) == 0;
+	if (res == false)
+		return false;
+	else
+	{
+		Duration = pformat_ctx->duration;
+	}
 }

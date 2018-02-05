@@ -1,38 +1,35 @@
 #include "stdafx.h"
 #include "VideoToPhotos.h"
-#include "windows.h"
+#include <string.h>  
 #include <wingdi.h>
-
+#include <msclr\marshal_cppstd.h> 
+using namespace msclr::interop;
+using namespace Video2Photos;
 
 VideoToPhotos::~VideoToPhotos()
 {
-	 if (m_pVideoInfo != NULL)
-	 {
-		 delete m_pVideoInfo;
-		 m_pVideoInfo = NULL;
-	 }
+
 }
 
-bool VideoToPhotos::Open(string filePath)
+bool VideoToPhotos::Open(String^ filePath)
 {
-	if (m_pVideoInfo == NULL)
-		m_pVideoInfo = new VideoInfo();
-		
-	return m_pVideoInfo->Open(filePath);
+	if (m_videoInfo == nullptr)
+		m_videoInfo = gcnew VideoInfo();
+	if (m_pCodecCtx != NULL)
+		avcodec_close(m_pCodecCtx);
+	
+	return m_videoInfo->Open(filePath);
 }
 
-int VideoToPhotos::Start(ImageType _type, string _savePath)
+int VideoToPhotos::Start(ImageType _type, String^ _savePath)
 {
-	if (m_pVideoInfo == NULL)
+	if (m_videoInfo == nullptr)
 		return -1;
 
+	marshal_context context;
+	string strSavePath = context.marshal_as<std::string>(_savePath);
+	string strFilePath = context.marshal_as<std::string>(m_videoInfo->FilePath);
 	int videoStream = -1;
-	AVCodecContext *pCodecCtx = NULL;
-	AVFormatContext *pFormatCtx = NULL;
-	AVCodec *pCodec = NULL;
-	AVFrame *pFrame = NULL, *pFrameRGB = NULL;
-	struct SwsContext *pSwsCtx = NULL;
-	AVPacket packet;
 	int frameFinished;
 	int PictureSize;
 	uint8_t *outBuff;
@@ -40,9 +37,9 @@ int VideoToPhotos::Start(ImageType _type, string _savePath)
 	bool doRotate = true;
 	switch (_type)
 	{
-	case ImageType_BMP:
+	case ImageType::ImageType_BMP:
 		break;
-	case ImageType_JPEG:
+	case ImageType::ImageType_JPEG:
 		avFormat = AVPixelFormat::AV_PIX_FMT_YUV420P;
 		doRotate = false;
 		break;
@@ -55,130 +52,127 @@ int VideoToPhotos::Start(ImageType _type, string _savePath)
 	// 初始化网络模块
 	avformat_network_init();
 	// 分配AVFormatContext
-	pFormatCtx = avformat_alloc_context();
-
+	m_pFormatCtx = avformat_alloc_context();
 	//打开视频文件
-	if (avformat_open_input(&pFormatCtx, m_pVideoInfo->m_filePath.c_str(), NULL, NULL) != 0) {
-		printf("av open input file failed!\n");
+	if (avformat_open_input(&m_pFormatCtx, strFilePath.c_str(), NULL, NULL) != 0) {
+		std::printf("av open input file failed!\n");
 		exit(1);
 	}
 
 	//获取流信息
-	if (avformat_find_stream_info(pFormatCtx, NULL) < 0) {
-		printf("av find stream info failed!\n");
+	if (avformat_find_stream_info(m_pFormatCtx, NULL) < 0) 
+	{
+		std::printf("av find stream info failed!\n");
 		exit(1);
 	}
 	
 	//获取视频流
-	for (int i = 0; i < pFormatCtx->nb_streams; i++) {
-		if (pFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
+	for (int i = 0; i < m_pFormatCtx->nb_streams; i++) 
+	{
+		if (m_pFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
 			videoStream = i;
 			break;
 		}
 	}
 	if (videoStream == -1) {
-		printf("find video stream failed!\n");
+		std::printf("find video stream failed!\n");
 		exit(1);
 	}
 
 	// 寻找解码器
-	pCodecCtx = pFormatCtx->streams[videoStream]->codec;
-	pCodec = avcodec_find_decoder(pCodecCtx->codec_id);
-	if (pCodec == NULL) {
-		printf("avcode find decoder failed!\n");
+	m_pCodecCtx = m_pFormatCtx->streams[videoStream]->codec;
+	m_pCodec = avcodec_find_decoder(m_pCodecCtx->codec_id);
+	if (m_pCodec == NULL) {
+		std::printf("avcode find decoder failed!\n");
 		exit(1);
 	}
 
 	//打开解码器
-	if (avcodec_open2(pCodecCtx, pCodec, NULL) < 0) {
-		printf("avcode open failed!\n");
+	if (avcodec_open2(m_pCodecCtx, m_pCodec, NULL) < 0) {
+		std::printf("avcode open failed!\n");
 		exit(1);
 	}
 
 	//为每帧图像分配内存
-	pFrame = av_frame_alloc();
-	pFrameRGB = av_frame_alloc();
-	if ((pFrame == NULL) || (pFrameRGB == NULL)) {
-		printf("avcodec alloc frame failed!\n");
+	m_pFrame = av_frame_alloc();
+	m_pFrameRGB = av_frame_alloc();
+	if ((m_pFrame == NULL) || (m_pFrameRGB == NULL)) {
+		std::printf("avcodec alloc frame failed!\n");
 		exit(1);
 	}
 
 	// 确定图片尺寸
-	PictureSize = avpicture_get_size(avFormat, pCodecCtx->width, pCodecCtx->height);
+	PictureSize = avpicture_get_size(avFormat, m_pCodecCtx->width, m_pCodecCtx->height);
 	outBuff = (uint8_t*)av_malloc(PictureSize);
 	if (outBuff == NULL) {
-		printf("av malloc failed!\n");
+		std::printf("av malloc failed!\n");
 		exit(1);
 	}
-	avpicture_fill((AVPicture *)pFrameRGB, outBuff, avFormat, pCodecCtx->width, pCodecCtx->height);
+	avpicture_fill((AVPicture *)m_pFrameRGB, outBuff, avFormat, m_pCodecCtx->width, m_pCodecCtx->height);
 
 	//设置图像转换上下文
-	pSwsCtx = sws_getContext(pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt,
-		pCodecCtx->width, pCodecCtx->height, avFormat,
+	pSwsCtx = sws_getContext(m_pCodecCtx->width, m_pCodecCtx->height, m_pCodecCtx->pix_fmt,
+		m_pCodecCtx->width, m_pCodecCtx->height, avFormat,
 		SWS_BICUBIC, NULL, NULL, NULL);
-	int imageCount = pFormatCtx->streams[videoStream]->nb_frames;
+	int imageCount = m_pFormatCtx->streams[videoStream]->nb_frames;
 	int i = 0;
-	while (av_read_frame(pFormatCtx, &packet) >= 0 && doContinue) {
-		if (packet.stream_index == videoStream) {
-			avcodec_decode_video2(pCodecCtx, pFrame, &frameFinished, &packet);
-
+	while (av_read_frame(m_pFormatCtx, m_pPacket) >= 0 && doContinue)
+	{
+		if (m_pPacket->stream_index == videoStream)
+		{
+			avcodec_decode_video2(m_pCodecCtx, m_pFrame, &frameFinished, m_pPacket);
 			if (frameFinished) 
 			{
-				pFrame->width = pCodecCtx->width;
-				pFrame->height = pCodecCtx->height;
+				m_pFrame->width = m_pCodecCtx->width;
+				m_pFrame->height = m_pCodecCtx->height;
 				if (doRotate)
 				{
 					//反转图像 ，否则生成的图像是上下调到的
-					pFrame->data[0] += pFrame->linesize[0] * (pCodecCtx->height - 1);
-					pFrame->linesize[0] *= -1;
-					pFrame->data[1] += pFrame->linesize[1] * (pCodecCtx->height / 2 - 1);
-					pFrame->linesize[1] *= -1;
-					pFrame->data[2] += pFrame->linesize[2] * (pCodecCtx->height / 2 - 1);
-					pFrame->linesize[2] *= -1;
+					m_pFrame->data[0] += m_pFrame->linesize[0] * (m_pCodecCtx->height - 1);
+					m_pFrame->linesize[0] *= -1;
+					m_pFrame->data[1] += m_pFrame->linesize[1] * (m_pCodecCtx->height / 2 - 1);
+					m_pFrame->linesize[1] *= -1;
+					m_pFrame->data[2] += m_pFrame->linesize[2] * (m_pCodecCtx->height / 2 - 1);
+					m_pFrame->linesize[2] *= -1;
 				}
 
 				//转换图像格式，将解压出来的YUV420P的图像转换为BRG24的图像
-				sws_scale(pSwsCtx, pFrame->data,
-					pFrame->linesize, 0, pCodecCtx->height,
-					pFrameRGB->data, pFrameRGB->linesize);
+				sws_scale(pSwsCtx, m_pFrame->data,
+					m_pFrame->linesize, 0, m_pCodecCtx->height,
+					m_pFrameRGB->data, m_pFrameRGB->linesize);
 
-				pFrameRGB->width = pFrame->width;
-				pFrameRGB->height = pFrame->height;
+				m_pFrameRGB->width = m_pFrame->width;
+				m_pFrameRGB->height = m_pFrame->height;
 				
 				switch (_type)
 				{
-				case ImageType_BMP:
-					SaveAsBMP(pFrameRGB, _savePath, i++, 24);
+				case ImageType::ImageType_BMP:
+					SaveAsBMP(m_pFrameRGB, strSavePath.c_str(), i++, 24);
 					break;
-				case ImageType_JPEG:
-					SaveAsJPEG(pFrameRGB, _savePath, i++);
+				case ImageType::ImageType_JPEG:
+					SaveAsJPEG(m_pFrameRGB, strSavePath.c_str(), i++);
 					break;
 				default:
 					break;
 				}
 			}
 		}
-		else {
-			int a = 2;
-			int b = a;
+		else
+		{
+			//do nothing
 		}
 		m_progress =(i / (double)imageCount);//进度
-		av_free_packet(&packet);
+		av_free_packet(m_pPacket);
+
 	}
 
 	sws_freeContext(pSwsCtx);
-	av_free(pFrame);
-	av_free(pFrameRGB);
-	avcodec_close(pCodecCtx);
-	avformat_close_input(&pFormatCtx);
+	av_free(m_pFrame);
+	av_free(m_pFrameRGB);
+	avcodec_close(m_pCodecCtx);
+	avformat_close_input(&m_pFormatCtx);
 
 	printf("---------------- over ---------------！");
-	return 0;
-}
-
-int VideoToPhotos::Stop()
-{
-	doContinue = false;
 	return 0;
 }
 
